@@ -30,6 +30,8 @@ async def call_twitch():
 
 async def get_speedruns(twitch_response):
     streams = twitch_response.json()['data']
+    if not streams:
+        return []
     return filter(lambda stream: SPEEDRUN_TAG_ID in stream['tag_ids'], streams)
 
 async def send_discord_messages(speedrun_channels):
