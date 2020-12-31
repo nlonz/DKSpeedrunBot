@@ -1,18 +1,21 @@
-import discord
-from discord.ext import commands
-from discord.utils import get
 import asyncio
-from pprint import pprint
+import discord
+import os
 import requests
 
+from dotenv import load_dotenv
+from pprint import pprint
+
+load_dotenv()
+
 # Super secret stuff - get these from me if you're running locally (Nick/Emo)
-DISCORD_TOKEN = ''
-BEARER_TOKEN = ''
-CLIENT_ID = ''
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+TWITCH_BEARER_TOKEN = os.getenv("TWITCH_BEARER_TOKEN")
+TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 
 # Kinda secret stuff - I still don't want to commit these but they're publicly available
-GUILD = ''
-CHANNEL_ID = None
+DISCORD_GUILD = os.getenv("DISCORD_GUILD")
+DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
 
 SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
 #SPEEDRUN_TAG_ID = '6ea6bca4-4712-4ab9-a906-e3336a9d8039' # This is actually the English tag. Uncomment this line for testing
@@ -22,29 +25,37 @@ already_live_speedruns = [] # List of live streamers that have already been post
 
 async def call_twitch():
     # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
-    await asyncio.sleep(60)
+    await asyncio.sleep(120)
     url = 'https://api.twitch.tv/helix/streams?game_id=13765'
     # TODO - Automate refreshing the Bearer token - it expires after 60 days
-    headers = {'Authorization' : 'Bearer ' + BEARER_TOKEN, 'Client-Id': CLIENT_ID}
+    headers = {'Authorization' : 'Bearer ' + TWITCH_BEARER_TOKEN, 'Client-Id': TWITCH_CLIENT_ID}
     return requests.get(url, headers=headers)
+
+def is_speedrun(stream):
+    if stream['tag_ids']:
+        return SPEEDRUN_TAG_ID in stream['tag_ids']
+    return False
 
 async def get_speedruns(twitch_response):
     streams = twitch_response.json()['data']
     if not streams:
         return []
-    return filter(lambda stream: SPEEDRUN_TAG_ID in stream['tag_ids'], streams)
+    return list(filter(is_speedrun, streams))
 
 async def send_discord_messages(speedrun_channels):
-    discord_channel = client.get_channel(CHANNEL_ID)
+    discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
     for channel in speedrun_channels:
-        if channel not in already_live_speedruns:
-            already_live_speedruns.append(channel)
-            output = "" + channel['user_name'] + " is live with: \n\n**" + channel['title'] + "**\n\nWatch LIVE at: https://www.twitch.tv/" + channel['user_name']
+        user_name = channel['user_name']
+        title = channel['title']
+        if user_name not in already_live_speedruns:
+            already_live_speedruns.append(user_name)
+            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: https://www.twitch.tv/" + user_name
             await discord_channel.send(output)
 
     # Check if anyone in the list has gone offline and remove them so they send a new post when live again
+    live_channel_names = list((channel['user_name'] for channel in speedrun_channels))
     for channel in already_live_speedruns:
-        if channel not in speedrun_channels:
+        if channel not in live_channel_names:
             already_live_speedruns.remove(channel)
 
 async def main_task():
@@ -56,7 +67,7 @@ async def main_task():
 @client.event
 async def on_ready():
     for guild in client.guilds:
-        if guild.name == GUILD:
+        if guild.name == DISCORD_GUILD:
             break
     print("Connected")
 
