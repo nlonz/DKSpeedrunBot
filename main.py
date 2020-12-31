@@ -69,6 +69,7 @@ async def on_ready():
     for guild in client.guilds:
         if guild.name == DISCORD_GUILD:
             break
+    await client.change_presence(activity=discord.Game("Donkey Kong 64"))
     print("Connected")
 
 loop = asyncio.get_event_loop()
