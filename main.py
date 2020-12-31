@@ -21,13 +21,12 @@ client = discord.Client()
 already_live_speedruns = [] # List of live streamers that have already been posted in the channel to avoid dupes
 
 async def call_twitch():
-    while True:
-        # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
-        await asyncio.sleep(10)
-        url = 'https://api.twitch.tv/helix/streams?game_id=13765'
-        # TODO - Automate refreshing the Bearer token - it expires after 60 days
-        headers = {'Authorization' : 'Bearer ' + BEARER_TOKEN, 'Client-Id': CLIENT_ID}
-        return requests.get(url, headers=headers)
+    # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
+    await asyncio.sleep(60)
+    url = 'https://api.twitch.tv/helix/streams?game_id=13765'
+    # TODO - Automate refreshing the Bearer token - it expires after 60 days
+    headers = {'Authorization' : 'Bearer ' + BEARER_TOKEN, 'Client-Id': CLIENT_ID}
+    return requests.get(url, headers=headers)
 
 async def get_speedruns(twitch_response):
     streams = twitch_response.json()['data']
@@ -47,9 +46,10 @@ async def send_discord_messages(speedrun_channels):
             already_live_speedruns.remove(channel)
 
 async def main_task():
-    twitch_response = await call_twitch()
-    speedrun_channels = await get_speedruns(twitch_response)
-    await send_discord_messages(speedrun_channels)
+    while True:
+        twitch_response = await call_twitch()
+        speedrun_channels = await get_speedruns(twitch_response)
+        await send_discord_messages(speedrun_channels)
 
 @client.event
 async def on_ready():
