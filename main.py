@@ -22,6 +22,7 @@ SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
 
 client = discord.Client()
 already_live_speedruns = [] # List of live streamers that have already been posted in the channel to avoid dupes
+recently_offline = [] # List of streamers who have gone offline and their message needs to be deleted from the channel
 
 async def call_twitch():
     # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
@@ -57,12 +58,24 @@ async def send_discord_messages(speedrun_channels):
     for channel in already_live_speedruns:
         if channel not in live_channel_names:
             already_live_speedruns.remove(channel)
+            recently_offline.append(channel)
+
+def is_offline(msg):
+    for channel in recently_offline:
+        if "Watch LIVE at: https://www.twitch.tv/" + channel in msg.content:
+            return True
+    return False
+
+async def delete_discord_messages():
+    discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
+    await discord_channel.purge(limit=100, check=is_offline)
 
 async def main_task():
     while True:
         twitch_response = await call_twitch()
         speedrun_channels = await get_speedruns(twitch_response)
         await send_discord_messages(speedrun_channels)
+        await delete_discord_messages()
 
 @client.event
 async def on_ready():
