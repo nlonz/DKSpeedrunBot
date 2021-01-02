@@ -17,8 +17,8 @@ TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
 DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
 
-#SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
-SPEEDRUN_TAG_ID = '6ea6bca4-4712-4ab9-a906-e3336a9d8039' # This is actually the English tag. Uncomment this line for testing
+SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
+#SPEEDRUN_TAG_ID = '6ea6bca4-4712-4ab9-a906-e3336a9d8039' # This is actually the English tag. Uncomment this line for testing
 
 client = discord.Client()
 already_live_speedruns = [] # List of live streamers that have already been posted in the channel to avoid dupes
