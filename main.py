@@ -38,7 +38,10 @@ def is_speedrun(stream):
     return False
 
 async def get_speedruns(twitch_response):
-    streams = twitch_response.json()['data']
+    json_response = twitch_response.json()
+    if not json_response:
+        return []
+    streams = json_response['data']
     if not streams:
         return []
     return list(filter(is_speedrun, streams))
@@ -49,6 +52,7 @@ async def send_discord_messages(speedrun_channels):
         user_name = channel['user_name']
         title = channel['title']
         if user_name not in already_live_speedruns:
+            print(user_name + ' is now online')
             already_live_speedruns.append(user_name)
             output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: https://www.twitch.tv/" + user_name
             await discord_channel.send(output)
@@ -57,8 +61,11 @@ async def send_discord_messages(speedrun_channels):
     live_channel_names = list((channel['user_name'] for channel in speedrun_channels))
     for channel in already_live_speedruns:
         if channel not in live_channel_names:
+            print('Removing ' + channel + 'from already live')
             already_live_speedruns.remove(channel)
             recently_offline.append(channel)
+            print('Already live: '+ ' '.join(already_live_speedruns))
+            print('Recently offline: '+ ' '.join(recently_offline))
 
 def is_offline(msg):
     for channel in recently_offline:
@@ -67,9 +74,13 @@ def is_offline(msg):
     return False
 
 async def delete_discord_messages():
-    discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
-    await discord_channel.purge(limit=100, check=is_offline)
-    recently_offline = []
+    try:
+        discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
+        await discord_channel.purge(limit=100, check=is_offline)
+        recently_offline.clear()
+    except:
+        print("Issue with the Discord API: ", sys.exc_info()[0])
+        pass
 
 async def main_task():
     while True:
