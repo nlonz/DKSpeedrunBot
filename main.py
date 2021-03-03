@@ -17,8 +17,8 @@ TWITCH_CLIENT_ID = os.getenv("TWITCH_CLIENT_ID")
 DISCORD_GUILD = os.getenv("DISCORD_GUILD")
 DISCORD_CHANNEL_ID = int(os.getenv("DISCORD_CHANNEL_ID"))
 
-#SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
-SPEEDRUN_TAG_ID = '6ea6bca4-4712-4ab9-a906-e3336a9d8039' # This is actually the English tag. Uncomment this line for testing
+SPEEDRUN_TAG_ID = '7cefbf30-4c3e-4aa7-99cd-70aabb662f27'
+#SPEEDRUN_TAG_ID = '6ea6bca4-4712-4ab9-a906-e3336a9d8039' # This is actually the English tag. Uncomment this line for testing
 
 client = discord.Client()
 already_live_speedruns = [] # List of live streamers that have already been posted in the channel to avoid dupes
@@ -26,7 +26,7 @@ recently_offline = [] # List of streamers who have gone offline and their messag
 
 async def call_twitch():
     # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
-    await asyncio.sleep(30)
+    await asyncio.sleep(120)
     url = 'https://api.twitch.tv/helix/streams?game_id=13765'
     # TODO - Automate refreshing the Bearer token - it expires after 60 days
     headers = {'Authorization' : 'Bearer ' + TWITCH_BEARER_TOKEN, 'Client-Id': TWITCH_CLIENT_ID}
@@ -54,7 +54,7 @@ async def send_discord_messages(speedrun_channels):
         if user_name not in already_live_speedruns:
             print(user_name + ' is now online')
             already_live_speedruns.append(user_name)
-            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: <https://www.twitch.tv/" + user_name + ">"
+            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: <https://www.twitch.tv/" + user_name + ">\n=========="
             await discord_channel.send(output)
 
     # Check if anyone in the list has gone offline and remove them so they send a new post when live again
