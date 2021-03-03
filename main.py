@@ -55,7 +55,7 @@ async def send_discord_messages(speedrun_channels):
         if user_name not in already_live_speedruns:
             print(user_name + ' is now online')
             already_live_speedruns.append(user_name)
-            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: https://www.twitch.tv/" + user_name
+            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: <https://www.twitch.tv/" + user_name + ">"
             await discord_channel.send(output)
 
     # Check if anyone in the list has gone offline and remove them so they send a new post when live again
