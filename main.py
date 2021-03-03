@@ -41,10 +41,11 @@ async def get_speedruns(twitch_response):
     json_response = twitch_response.json()
     if not json_response:
         return []
-    streams = json_response['data']
-    if not streams:
-        return []
-    return list(filter(is_speedrun, streams))
+    if 'data' in json_response:
+        streams = json_response['data']
+        if not streams:
+            return []
+        return list(filter(is_speedrun, streams))
 
 async def send_discord_messages(speedrun_channels):
     discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
