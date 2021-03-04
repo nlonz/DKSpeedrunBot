@@ -26,7 +26,7 @@ recently_offline = [] # List of streamers who have gone offline and their messag
 
 async def call_twitch():
     # Waiting period between Twitch API calls - this is first so the bot can connect to Discord on init
-    await asyncio.sleep(120)
+    await asyncio.sleep(15)
     url = 'https://api.twitch.tv/helix/streams?game_id=13765'
     # TODO - Automate refreshing the Bearer token - it expires after 60 days
     headers = {'Authorization' : 'Bearer ' + TWITCH_BEARER_TOKEN, 'Client-Id': TWITCH_CLIENT_ID}
@@ -54,7 +54,7 @@ async def send_discord_messages(speedrun_channels):
         if user_name not in already_live_speedruns:
             print(user_name + ' is now online')
             already_live_speedruns.append(user_name)
-            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: <https://www.twitch.tv/" + user_name + ">\n=========="
+            output = user_name + " is live with: \n\n**" + title + "**\n\nWatch LIVE at: <https://www.twitch.tv/" + user_name + ">\n<:DKBunch:356920529317396501><:DiddyBunch:356920529464066050><:LankyBunch:356920529657266176><:TinyBunch:356920529300750348><:ChunkyBunch:356920529472716811><:DKBunch:356920529317396501><:DiddyBunch:356920529464066050><:LankyBunch:356920529657266176><:TinyBunch:356920529300750348><:ChunkyBunch:356920529472716811>"
             await discord_channel.send(output)
 
     # Check if anyone in the list has gone offline and remove them so they send a new post when live again
@@ -69,7 +69,7 @@ async def send_discord_messages(speedrun_channels):
 
 def is_offline(msg):
     for channel in recently_offline:
-        if "Watch LIVE at: https://www.twitch.tv/" + channel in msg.content:
+        if "Watch LIVE at: <https://www.twitch.tv/" + channel in msg.content:
             return True
     return False
 
