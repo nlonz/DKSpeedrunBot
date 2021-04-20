@@ -2,6 +2,7 @@ import asyncio
 import discord
 import os
 import requests
+import sys
 
 from dotenv import load_dotenv
 from pprint import pprint
