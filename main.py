@@ -76,20 +76,20 @@ def is_offline(msg):
     return False
 
 async def delete_discord_messages():
-    try:
-        discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
-        await discord_channel.purge(limit=100, check=is_offline)
-        recently_offline.clear()
-    except:
-        print("Issue with the Discord API: ", sys.exc_info()[0])
-        pass
+    discord_channel = client.get_channel(DISCORD_CHANNEL_ID)
+    await discord_channel.purge(limit=100, check=is_offline)
+    recently_offline.clear()
 
 async def main_task():
     while True:
-        twitch_response = await call_twitch()
-        speedrun_channels = await get_speedruns(twitch_response)
-        await send_discord_messages(speedrun_channels)
-        await delete_discord_messages()
+        try:
+            twitch_response = await call_twitch()
+            speedrun_channels = await get_speedruns(twitch_response)
+            await send_discord_messages(speedrun_channels)
+            await delete_discord_messages()
+        except:
+            print("Issue with Discord or Twitch: ", sys.exc_info()[0])
+            pass
 
 @client.event
 async def on_ready():
